@@ -274,12 +274,11 @@ let deleteBookingId = null;
 async function confirmDeleteBooking(bookingId) {
   deleteBookingId = bookingId;
   const bookings = await getBookings();
-  const bookingsList = getBookings();
-  const booking = bookingsList.find(b => b.id === bookingId);
+  const booking = bookings.find(b => b.id === bookingId);
   if (!booking) return;
 
   const trainings = await getTrainings();
-  const training = trainings.find(t => t.id === booking.trainingId);
+  const training = trainings.find(t => t.id === booking.training_id);
 
   document.getElementById('confirmTitle').textContent = 'Usuwanie zapisu';
   document.getElementById('confirmMessage').innerHTML = `
@@ -295,6 +294,19 @@ function closeConfirm() {
   document.getElementById('confirmOverlay').classList.remove('active');
   deleteTrainingId = null;
   deleteBookingId = null;
+}
+
+async function deleteBooking(id){
+
+ const { error } = await supabase
+   .from("bookings")
+   .delete()
+   .eq("id", id);
+
+ if(error){
+   console.error(error);
+   throw error;
+ }
 }
 
 async function executeDelete() {
@@ -316,32 +328,21 @@ async function executeDelete() {
       showNotification('Trening usunięty', 'success');
     }
 
-    saveTrainings(newTrainings);
+    await deleteTraining(deleteTrainingId);
   }
 
-  if (deleteBookingId !== null) {
-    const bookings = await getBookings();
-    const booking = bookings.find(b => b.id === deleteBookingId);
-    if (booking) {
-      // Zmniejsz licznik booked w treningu
-      const trainings = await getTrainings();
-      const training = trainings.find(t => t.id === booking.trainingId);
-      if (training && training.booked > 0) {
-        training.booked -= 1;
-        saveTrainings(trainings);
-      }
-      // Usuń booking
-      const newBookings = bookings.filter(b => b.id !== deleteBookingId);
-      saveBookings(newBookings);
-      showNotification('Zapis usunięty', 'success');
+    if (deleteBookingId !== null) {
+    
+        await deleteBooking(deleteBookingId);
+    
+        showNotification('Zapis usunięty', 'success');
     }
-  }
-
-  closeConfirm();
-  renderTable();
-  renderBookings();
-  updateStats();
-}
+    
+      closeConfirm();
+      renderTable();
+      renderBookings();
+      updateStats();
+    }
 
 // --- CYCLIC PREVIEW ---
 function updateCyclicPreview() {
@@ -402,6 +403,19 @@ function toggleCyclicFields() {
     cyclicFields.style.display = 'none';
   }
   updateCyclicPreview();
+}
+// --- DELETE TRAINING ---
+async function deleteTraining(id){
+
+ const { error } = await supabase
+   .from("trainings")
+   .delete()
+   .eq("id", id);
+
+ if(error){
+   console.error(error);
+   throw error;
+ }
 }
 
 // --- ADD TRAINING ---
