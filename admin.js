@@ -549,9 +549,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
     document.addEventListener('DOMContentLoaded', async () => {
-    
-      await checkAdmin();
-    
+   
       await renderTable();
       await renderBookings();
       await updateStats();
