@@ -20,11 +20,20 @@ const defaultTrainings = [
   { id: 1, date: "2025-08-10", time: "16:00", title: "Trening grupowy", capacity: 6, booked: 3 },
 ];
 
-function getTrainings() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return JSON.parse(stored);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultTrainings));
-  return defaultTrainings;
+async function getTrainings() {
+
+  const { data, error } = await supabase
+    .from("trainings")
+    .select("*")
+    .order("date")
+    .order("time");
+
+  if(error){
+    console.error(error);
+    return [];
+  }
+
+  return data;
 }
 
 function saveTrainings(trainings) {
@@ -125,10 +134,10 @@ function highlightActiveSection() {
 window.addEventListener('scroll', highlightActiveSection);
 
 // ================= CALENDAR =================
-function renderCalendar() {
+async function renderCalendar() {
   const grid = document.getElementById('calendarGrid');
   const weekRange = document.getElementById('weekRange');
-  const trainings = getTrainings();
+  const trainings = await getTrainings();
 
   grid.innerHTML = '';
 
@@ -237,7 +246,7 @@ document.getElementById('nextWeek').addEventListener('click', () => {
 
 // ================= BOOKING MODAL =================
 function openBookingModal(trainingId) {
-  const trainings = getTrainings();
+  const trainings = await getTrainings();
   const training = trainings.find(t => t.id === trainingId);
   if (!training) return;
 
@@ -302,7 +311,7 @@ async function bookTraining(trainingId, name, email, phone = '', notes = '') {
   try {
     await new Promise(resolve => setTimeout(resolve, 600));
 
-    const trainings = getTrainings();
+    const trainings = await getTrainings();
     const training = trainings.find(t => t.id === trainingId);
     if (!training) throw new Error('Trening nie istnieje');
     if (training.booked >= training.capacity) throw new Error('Brak wolnych miejsc');
