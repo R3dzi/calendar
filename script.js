@@ -245,7 +245,7 @@ document.getElementById('nextWeek').addEventListener('click', () => {
 });
 
 // ================= BOOKING MODAL =================
-function openBookingModal(trainingId) {
+async function openBookingModal(trainingId) {
   const trainings = await getTrainings();
   const training = trainings.find(t => t.id === trainingId);
   if (!training) return;
