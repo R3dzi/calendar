@@ -34,9 +34,18 @@ async function getTrainings() {
 
 async function saveTrainings(trainings) {
 
+  const cleanedTrainings = trainings.map(t => ({
+    id: t.id,
+    date: t.date,
+    time: t.time,
+    title: t.title,
+    capacity: t.capacity,
+    group_id: t.groupId || null
+  }));
+
   const { error } = await supabase
     .from("trainings")
-    .insert(trainings);
+    .insert(cleanedTrainings);
 
   if(error){
     console.error(error);
@@ -403,7 +412,13 @@ async function handleAddTraining(e) {
   const newTrainings = [];
 
   if (type === 'single') {
-    newTrainings.push({ id: generateId(), date, time, title, capacity, booked: 0 });
+    newTrainings.push({ 
+     id: generateId(),
+     date,
+     time,
+     title,
+     capacity
+    });
   } else {
     const intervalWeeks = parseInt(document.getElementById('intervalWeeks').value, 10) || 1;
     const weeksCount = parseInt(document.getElementById('weeksCount').value, 10) || 4;
@@ -416,7 +431,14 @@ async function handleAddTraining(e) {
     const maxIterations = 100;
 
     while (strToDate(currentDate) < strToDate(addDaysToStr(date, maxDays)) && count < maxIterations) {
-      newTrainings.push({ id: generateId(), date: currentDate, time, title, capacity, booked: 0, groupId });
+      newTrainings.push({ 
+         id: generateId(),
+         date: currentDate,
+         time,
+         title,
+         capacity,
+         groupId
+        });
       currentDate = addDaysToStr(currentDate, intervalDays);
       count++;
     }
