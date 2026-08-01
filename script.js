@@ -275,6 +275,8 @@ function openBookingModal(trainingId) {
   document.body.style.overflow = 'hidden';
 }
 
+window.openBookingModal = openBookingModal;
+
 function closeBookingModal() {
   document.getElementById('bookingModal').classList.remove('active');
   document.body.style.overflow = '';
