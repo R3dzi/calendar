@@ -535,18 +535,24 @@ window.confirmDeleteBooking = confirmDeleteBooking;
 window.confirmDeleteTraining = confirmDeleteTraining;
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', async () => {
-  if (!localStorage.getItem(STORAGE_KEY)) {
-    const defaultTrainings = [
-    ];
-    saveTrainings(defaultTrainings);
-  }    
-    });
 
+  // Sprawdź czy administrator jest zalogowany
+  await checkAdmin();
+
+  // Załaduj dane z Supabase
+  await renderTable();
+  await renderBookings();
+  await updateStats();
+
+  // Event listenery
   document.getElementById('addTrainingForm').addEventListener('submit', handleAddTraining);
   document.getElementById('cancelDelete').addEventListener('click', closeConfirm);
   document.getElementById('confirmDelete').addEventListener('click', executeDelete);
+
   document.getElementById('confirmOverlay').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('confirmOverlay')) closeConfirm();
+    if (e.target === document.getElementById('confirmOverlay')) {
+      closeConfirm();
+    }
   });
 
   document.querySelectorAll('input[name="trainingType"]').forEach(radio => {
@@ -555,6 +561,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('trainingTitle').addEventListener('change', (e) => {
     const wrap = document.getElementById('customTitleWrap');
+
     if (e.target.value === 'custom') {
       wrap.style.display = 'block';
       document.getElementById('customTitle').focus();
@@ -567,29 +574,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('intervalWeeks').addEventListener('input', updateCyclicPreview);
   document.getElementById('weeksCount').addEventListener('input', updateCyclicPreview);
 
+  // Domyślna data = jutro
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   document.getElementById('trainingDate').value = dateToStr(tomorrow);
+
   updateDayHint();
-});
-
-document.addEventListener("DOMContentLoaded", async () => {
-
-    await checkAdmin();
-
-    if (!localStorage.getItem(STORAGE_KEY)) {
-        saveTrainings([]);
-    }
-
-    await renderTable();
-    await renderBookings();
-    await updateStats();
-
-    // wszystkie eventListenery...
-
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    document.getElementById("trainingDate").value = dateToStr(tomorrow);
-    updateDayHint();
 
 });
