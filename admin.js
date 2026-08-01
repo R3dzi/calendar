@@ -537,59 +537,49 @@ window.confirmDeleteTraining = confirmDeleteTraining;
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', async () => {
 
-    if (!localStorage.getItem(STORAGE_KEY)) {
-        const defaultTrainings = [
-        ];
+  // Sprawdź czy administrator jest zalogowany
+  await checkAdmin();
 
-        saveTrainings(defaultTrainings);
+  // Załaduj dane z Supabase
+  await renderTable();
+  await renderBookings();
+  await updateStats();
+
+  // Event listenery
+  document.getElementById('addTrainingForm').addEventListener('submit', handleAddTraining);
+  document.getElementById('cancelDelete').addEventListener('click', closeConfirm);
+  document.getElementById('confirmDelete').addEventListener('click', executeDelete);
+
+  document.getElementById('confirmOverlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('confirmOverlay')) {
+      closeConfirm();
     }
+  });
 
-    document.getElementById('addTrainingForm')
-        .addEventListener('submit', handleAddTraining);
+  document.querySelectorAll('input[name="trainingType"]').forEach(radio => {
+    radio.addEventListener('change', toggleCyclicFields);
+  });
 
-    document.getElementById('cancelDelete')
-        .addEventListener('click', closeConfirm);
+  document.getElementById('trainingTitle').addEventListener('change', (e) => {
+    const wrap = document.getElementById('customTitleWrap');
 
-    document.getElementById('confirmDelete')
-        .addEventListener('click', executeDelete);
+    if (e.target.value === 'custom') {
+      wrap.style.display = 'block';
+      document.getElementById('customTitle').focus();
+    } else {
+      wrap.style.display = 'none';
+    }
+  });
 
-    document.getElementById('confirmOverlay')
-        .addEventListener('click', (e) => {
-            if (e.target === document.getElementById('confirmOverlay')) {
-                closeConfirm();
-            }
-        });
+  document.getElementById('trainingDate').addEventListener('change', updateDayHint);
+  document.getElementById('intervalWeeks').addEventListener('input', updateCyclicPreview);
+  document.getElementById('weeksCount').addEventListener('input', updateCyclicPreview);
 
-    document.querySelectorAll('input[name="trainingType"]')
-        .forEach(radio => {
-            radio.addEventListener('change', toggleCyclicFields);
-        });
+  // Domyślna data = jutro
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('trainingDate').value = dateToStr(tomorrow);
 
-    document.getElementById('trainingTitle')
-        .addEventListener('change', (e) => {
-            const wrap = document.getElementById('customTitleWrap');
+  updateDayHint();
 
-            if (e.target.value === 'custom') {
-                wrap.style.display = 'block';
-                document.getElementById('customTitle').focus();
-            } else {
-                wrap.style.display = 'none';
-            }
-        });
-
-    document.getElementById('trainingDate')
-        .addEventListener('change', updateDayHint);
-
-    document.getElementById('intervalWeeks')
-        .addEventListener('input', updateCyclicPreview);
-
-    document.getElementById('weeksCount')
-        .addEventListener('input', updateCyclicPreview);
-
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    document.getElementById('trainingDate').value = dateToStr(tomorrow);
-
-    updateDayHint();
 });
