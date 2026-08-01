@@ -118,7 +118,7 @@ function showNotification(message, type = 'success') {
 }
 
 // --- STATYSTYKI ---
-function updateStats() {
+async function updateStats() {
   const trainings = await getTrainings();
   const bookings = getBookings();
   const totalTrainings = trainings.length;
@@ -134,7 +134,7 @@ function updateStats() {
 }
 
 // --- TABELA TRENINGÓW ---
-function renderTable() {
+async function renderTable() {
   const tbody = document.getElementById('adminTableBody');
   const trainings = await getTrainings();
   const sorted = [...trainings].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
@@ -177,7 +177,7 @@ function renderTable() {
 }
 
 // --- LISTA ZAPISANYCH OSÓB ---
-function renderBookings() {
+async function renderBookings() {
   const tbody = document.getElementById('bookingsTableBody');
   const bookings = getBookings();
   const trainings = await getTrainings();
@@ -461,16 +461,16 @@ async function handleAddTraining(e) {
 }
 
 // --- INIT ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (!localStorage.getItem(STORAGE_KEY)) {
     const defaultTrainings = [
     ];
     saveTrainings(defaultTrainings);
   }
 
-  renderTable();
-  renderBookings();
-  updateStats();
+  await renderTable();
+  await renderBookings();
+  await updateStats();
 
   document.getElementById('addTrainingForm').addEventListener('submit', handleAddTraining);
   document.getElementById('cancelDelete').addEventListener('click', closeConfirm);
