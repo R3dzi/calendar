@@ -500,7 +500,8 @@ async function handleAddTraining(e) {
   renderTable();
   updateStats();
 }
-
+window.confirmDeleteBooking = confirmDeleteBooking;
+window.confirmDeleteTraining = confirmDeleteTraining;
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', async () => {
   if (!localStorage.getItem(STORAGE_KEY)) {
