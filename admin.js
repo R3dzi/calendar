@@ -16,14 +16,24 @@ const supabase = createClient(
 
 
 async function checkAdmin() {
-    const {
-        data: { session }
-    } = await supabase.auth.getSession();
 
-    if (!session) {
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+        console.error("Błąd pobierania sesji:", error);
         window.location.href = "login.html";
         return false;
     }
+
+    const session = data.session;
+
+    if (!session) {
+        console.log("Brak sesji - przekierowanie do logowania");
+        window.location.replace("login.html");
+        return false;
+    }
+
+    console.log("Admin zalogowany:", session.user.email);
 
     return true;
 }
@@ -537,7 +547,11 @@ window.confirmDeleteTraining = confirmDeleteTraining;
 document.addEventListener('DOMContentLoaded', async () => {
 
   // Sprawdź czy administrator jest zalogowany
-  await checkAdmin();
+  const isAdmin = await checkAdmin();
+
+  if (!isAdmin) {
+      return;
+  }
 
   // Załaduj dane z Supabase
   await renderTable();
