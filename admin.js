@@ -63,9 +63,19 @@ async function saveTrainings(trainings) {
 
 }
 
-function getBookings() {
-  const stored = localStorage.getItem(BOOKINGS_KEY);
-  return stored ? JSON.parse(stored) : [];
+async function getBookings() {
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if(error){
+    console.error(error);
+    return [];
+  }
+
+  return data;
 }
 
 function saveBookings(bookings) {
@@ -137,8 +147,8 @@ function showNotification(message, type = 'success') {
 
 // --- STATYSTYKI ---
 async function updateStats() {
+  const bookings = await getBookings();
   const trainings = await getTrainings();
-  const bookings = getBookings();
   const totalTrainings = trainings.length;
   const totalBookings = bookings.length;
   const totalCapacity = trainings.reduce((sum, t) => sum + t.capacity, 0);
@@ -197,7 +207,7 @@ async function renderTable() {
 // --- LISTA ZAPISANYCH OSÓB ---
 async function renderBookings() {
   const tbody = document.getElementById('bookingsTableBody');
-  const bookings = getBookings();
+  const bookings = await getBookings();
   const trainings = await getTrainings();
 
   if (bookings.length === 0) {
@@ -211,10 +221,10 @@ async function renderBookings() {
   }
 
   // Sortuj od najnowszych
-  const sorted = [...bookings].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const sorted = [...bookings].sort((a, b) => new Date(b.created_at) - new Date(a.createdAt));
 
   tbody.innerHTML = sorted.map(b => {
-    const training = trainings.find(t => t.id === b.trainingId);
+    const training = trainings.find(t => t.id === b.training_id);
     const trainingInfo = training 
       ? `${training.title}, ${formatDatePL(training.date)} ${training.time}` 
       : 'Trening usunięty';
@@ -223,7 +233,7 @@ async function renderBookings() {
       <tr data-booking-id="${b.id}">
         <td style="font-weight: 600; color: var(--text-primary);">${b.name}</td>
         <td>${b.email}</td>
-        <td>${b.phone || '-'}</td>
+        <td>-</td>
         <td>${trainingInfo}</td>
         <td>${b.notes || '-'}</td>
         <td class="actions">
@@ -263,7 +273,7 @@ let deleteBookingId = null;
 
 async function confirmDeleteBooking(bookingId) {
   deleteBookingId = bookingId;
-  const bookings = getBookings();
+  const bookings = await getBookings();
   const bookingsList = getBookings();
   const booking = bookingsList.find(b => b.id === bookingId);
   if (!booking) return;
@@ -310,7 +320,7 @@ async function executeDelete() {
   }
 
   if (deleteBookingId !== null) {
-    const bookings = getBookings();
+    const bookings = await getBookings();
     const booking = bookings.find(b => b.id === deleteBookingId);
     if (booking) {
       // Zmniejsz licznik booked w treningu
