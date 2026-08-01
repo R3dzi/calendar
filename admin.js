@@ -3,6 +3,27 @@
  * FitReserve Admin Panel (Mobile-First)
  * ============================================================
  */
+
+async function checkAdmin(){
+
+const {
+data:{
+session
+}
+} = await supabase.auth.getSession();
+
+
+if(!session){
+
+window.location.href="login.html";
+
+}
+
+}
+
+
+checkAdmin();
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = "https://josdglurvhbcbjtkywyv.supabase.co";
