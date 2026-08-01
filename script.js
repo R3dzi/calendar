@@ -14,7 +14,7 @@ const supabase = createClient(
 );
 
 const STORAGE_KEY = 'fitreserve_trainings';
-const BOOKINGS_KEY = 'fitreserve_bookings';
+
 
 const defaultTrainings = [
   { id: 1, date: "2025-08-10", time: "16:00", title: "Trening grupowy", capacity: 6, booked: 3 },
@@ -24,25 +24,31 @@ async function getTrainings() {
 
   const { data, error } = await supabase
     .from("trainings")
-    .select("*")
+    .select(`
+      *,
+      bookings (
+        id
+      )
+    `)
     .order("date")
     .order("time");
+
 
   if(error){
     console.error(error);
     return [];
   }
 
-  return data;
+
+  return data.map(training => ({
+    ...training,
+    booked: training.bookings?.length || 0
+  }));
+
 }
 
 function saveTrainings(trainings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trainings));
-}
-
-function getBookings() {
-  const stored = localStorage.getItem(BOOKINGS_KEY);
-  return stored ? JSON.parse(stored) : [];
 }
 
 function saveBookings(bookings) {
@@ -308,35 +314,58 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
 });
 
 async function bookTraining(trainingId, name, email, phone = '', notes = '') {
+
   try {
-    await new Promise(resolve => setTimeout(resolve, 600));
 
     const trainings = await getTrainings();
     const training = trainings.find(t => t.id === trainingId);
-    if (!training) throw new Error('Trening nie istnieje');
-    if (training.booked >= training.capacity) throw new Error('Brak wolnych miejsc');
 
-    const bookings = getBookings();
-    bookings.push({
-      id: Date.now() + Math.floor(Math.random() * 1000),
-      trainingId: trainingId,
-      name,
-      email,
-      phone,
-      notes,
-      createdAt: new Date().toISOString()
-    });
-    saveBookings(bookings);
+    if (!training) {
+      throw new Error('Trening nie istnieje');
+    }
 
-    training.booked += 1;
-    saveTrainings(trainings);
+    if (training.booked >= training.capacity) {
+      throw new Error('Brak wolnych miejsc');
+    }
+
+
+    // zapis do Supabase
+    const { error } = await supabase
+      .from("bookings")
+      .insert({
+        training_id: trainingId,
+        name: name,
+        email: email,
+        phone: phone,
+        notes: notes
+      });
+
+
+    if (error) {
+      console.error(error);
+      throw error;
+    }
+
 
     closeBookingModal();
-    renderCalendar();
-    showNotification('Rezerwacja potwierdzona! ✅', 'success');
 
-  } catch (error) {
-    showNotification(error.message || 'Wystąpił błąd podczas rezerwacji.', 'error');
+    await renderCalendar();
+
+    showNotification(
+      'Rezerwacja potwierdzona! ✅',
+      'success'
+    );
+
+
+  } catch(error) {
+
+    console.error(error);
+
+    showNotification(
+      error.message || 'Wystąpił błąd podczas rezerwacji.',
+      'error'
+    );
+
   }
 }
 
