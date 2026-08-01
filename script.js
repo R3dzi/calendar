@@ -17,25 +17,7 @@ const STORAGE_KEY = 'fitreserve_trainings';
 const BOOKINGS_KEY = 'fitreserve_bookings';
 
 const defaultTrainings = [
-  { id: 1, date: "2026-08-10", time: "16:00", title: "Trening grupowy", capacity: 6, booked: 3 },
-  { id: 2, date: "2026-08-10", time: "17:00", title: "Trening grupowy", capacity: 6, booked: 6 },
-  { id: 3, date: "2026-08-10", time: "18:00", title: "Trening indywidualny", capacity: 1, booked: 0 },
-  { id: 4, date: "2026-08-10", time: "19:30", title: "Yoga", capacity: 10, booked: 7 },
-  { id: 5, date: "2026-08-11", time: "08:00", title: "CrossFit", capacity: 8, booked: 2 },
-  { id: 6, date: "2026-08-11", time: "17:00", title: "Trening grupowy", capacity: 6, booked: 4 },
-  { id: 7, date: "2026-08-11", time: "18:30", title: "Pilates", capacity: 8, booked: 8 },
-  { id: 8, date: "2026-08-12", time: "16:00", title: "Trening grupowy", capacity: 6, booked: 1 },
-  { id: 9, date: "2026-08-12", time: "17:30", title: "Spinning", capacity: 12, booked: 9 },
-  { id: 10, date: "2026-08-12", time: "19:00", title: "Trening indywidualny", capacity: 1, booked: 1 },
-  { id: 11, date: "2026-08-13", time: "08:00", title: "CrossFit", capacity: 8, booked: 5 },
-  { id: 12, date: "2026-08-13", time: "16:00", title: "Trening grupowy", capacity: 6, booked: 2 },
-  { id: 13, date: "2026-08-13", time: "18:00", title: "Yoga", capacity: 10, booked: 6 },
-  { id: 14, date: "2026-08-14", time: "17:00", title: "Trening grupowy", capacity: 6, booked: 3 },
-  { id: 15, date: "2026-08-14", time: "19:00", title: "Spinning", capacity: 12, booked: 11 },
-  { id: 16, date: "2026-08-15", time: "10:00", title: "Pilates", capacity: 8, booked: 4 },
-  { id: 17, date: "2026-08-15", time: "12:00", title: "Trening grupowy", capacity: 6, booked: 0 },
-  { id: 18, date: "2026-08-16", time: "11:00", title: "Yoga", capacity: 10, booked: 8 },
-  { id: 19, date: "2026-08-16", time: "13:00", title: "CrossFit", capacity: 8, booked: 6 },
+  { id: 1, date: "2025-08-10", time: "16:00", title: "Trening grupowy", capacity: 6, booked: 3 },
 ];
 
 function getTrainings() {
