@@ -14,22 +14,15 @@ const supabase = createClient(
     SUPABASE_KEY
 );
 
+async function checkAdmin() {
+    const {
+        data: { session }
+    } = await supabase.auth.getSession();
 
-async function checkAdmin(){
-
-const {
-data:{
-session
-}
-} = await supabase.auth.getSession();
-
-
-if(!session){
-
-window.location.href="login.html";
-
-}
-
+    if (!session) {
+        window.location.href = "login.html";
+        return;
+    }
 }
 
 
@@ -546,14 +539,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const defaultTrainings = [
     ];
     saveTrainings(defaultTrainings);
-  }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-   
-      await renderTable();
-      await renderBookings();
-      await updateStats();
-    
+  }    
     });
 
   document.getElementById('addTrainingForm').addEventListener('submit', handleAddTraining);
@@ -585,4 +571,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   tomorrow.setDate(tomorrow.getDate() + 1);
   document.getElementById('trainingDate').value = dateToStr(tomorrow);
   updateDayHint();
+});
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    await checkAdmin();
+
+    if (!localStorage.getItem(STORAGE_KEY)) {
+        saveTrainings([]);
+    }
+
+    await renderTable();
+    await renderBookings();
+    await updateStats();
+
+    // wszystkie eventListenery...
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById("trainingDate").value = dateToStr(tomorrow);
+    updateDayHint();
+
 });
