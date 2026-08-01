@@ -14,6 +14,7 @@ const supabase = createClient(
     SUPABASE_KEY
 );
 
+
 async function checkAdmin() {
     const {
         data: { session }
@@ -21,14 +22,12 @@ async function checkAdmin() {
 
     if (!session) {
         window.location.href = "login.html";
-        return;
+        return false;
     }
+
+    return true;
 }
 
-
-document.addEventListener('DOMContentLoaded', async () => {
-
-  await checkAdmin();
 
 const STORAGE_KEY = 'fitreserve_trainings';
 const BOOKINGS_KEY = 'fitreserve_bookings';
