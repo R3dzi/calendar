@@ -4,6 +4,17 @@
  * ============================================================
  */
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = "https://josdglurvhbcbjtkywyv.supabase.co";
+const SUPABASE_KEY = "sb_publishable__bzqXmvZvSFgQKyCNk_Y_g_q7I-J-Mv";
+
+const supabase = createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
 async function checkAdmin(){
 
 const {
@@ -23,16 +34,6 @@ window.location.href="login.html";
 
 
 checkAdmin();
-
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const SUPABASE_URL = "https://josdglurvhbcbjtkywyv.supabase.co";
-const SUPABASE_KEY = "sb_publishable__bzqXmvZvSFgQKyCNk_Y_g_q7I-J-Mv";
-
-const supabase = createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
 
 const STORAGE_KEY = 'fitreserve_trainings';
 const BOOKINGS_KEY = 'fitreserve_bookings';
