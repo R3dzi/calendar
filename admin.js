@@ -3,18 +3,46 @@
  * FitReserve Admin Panel (Mobile-First)
  * ============================================================
  */
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = "https://josdglurvhbcbjtkywyv.supabase.co";
+const SUPABASE_KEY = "sb_publishable__bzqXmvZvSFgQKyCNk_Y_g_q7I-J-Mv";
+
+const supabase = createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
 const STORAGE_KEY = 'fitreserve_trainings';
 const BOOKINGS_KEY = 'fitreserve_bookings';
 
-function getTrainings() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return JSON.parse(stored);
-  return [];
+async function getTrainings() {
+
+  const { data, error } = await supabase
+    .from("trainings")
+    .select("*")
+    .order("date")
+    .order("time");
+
+  if(error){
+    console.error(error);
+    return [];
+  }
+
+  return data;
 }
 
-function saveTrainings(trainings) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(trainings));
+async function saveTrainings(trainings) {
+
+  const { error } = await supabase
+    .from("trainings")
+    .insert(trainings);
+
+  if(error){
+    console.error(error);
+    throw error;
+  }
+
 }
 
 function getBookings() {
@@ -91,7 +119,7 @@ function showNotification(message, type = 'success') {
 
 // --- STATYSTYKI ---
 function updateStats() {
-  const trainings = getTrainings();
+  const trainings = await getTrainings();
   const bookings = getBookings();
   const totalTrainings = trainings.length;
   const totalBookings = bookings.length;
@@ -108,7 +136,7 @@ function updateStats() {
 // --- TABELA TRENINGÓW ---
 function renderTable() {
   const tbody = document.getElementById('adminTableBody');
-  const trainings = getTrainings();
+  const trainings = await getTrainings();
   const sorted = [...trainings].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 
   if (sorted.length === 0) {
@@ -152,7 +180,7 @@ function renderTable() {
 function renderBookings() {
   const tbody = document.getElementById('bookingsTableBody');
   const bookings = getBookings();
-  const trainings = getTrainings();
+  const trainings = await getTrainings();
 
   if (bookings.length === 0) {
     tbody.innerHTML = `
@@ -192,7 +220,7 @@ let deleteTrainingId = null;
 
 function confirmDeleteTraining(trainingId) {
   deleteTrainingId = trainingId;
-  const trainings = getTrainings();
+  const trainings = await getTrainings();
   const training = trainings.find(t => t.id === trainingId);
   if (!training) return;
 
@@ -222,7 +250,7 @@ function confirmDeleteBooking(bookingId) {
   const booking = bookingsList.find(b => b.id === bookingId);
   if (!booking) return;
 
-  const trainings = getTrainings();
+  const trainings = await getTrainings();
   const training = trainings.find(t => t.id === booking.trainingId);
 
   document.getElementById('confirmTitle').textContent = 'Usuwanie zapisu';
@@ -244,7 +272,7 @@ function closeConfirm() {
 function executeDelete() {
   // Sprawdź czy usuwamy trening czy booking
   if (deleteTrainingId !== null) {
-    const trainings = getTrainings();
+    const trainings = await getTrainings();
     const training = trainings.find(t => t.id === deleteTrainingId);
     if (!training) { closeConfirm(); return; }
 
@@ -268,7 +296,7 @@ function executeDelete() {
     const booking = bookings.find(b => b.id === deleteBookingId);
     if (booking) {
       // Zmniejsz licznik booked w treningu
-      const trainings = getTrainings();
+      const trainings = await getTrainings();
       const training = trainings.find(t => t.id === booking.trainingId);
       if (training && training.booked > 0) {
         training.booked -= 1;
@@ -349,7 +377,7 @@ function toggleCyclicFields() {
 }
 
 // --- ADD TRAINING ---
-function handleAddTraining(e) {
+async function handleAddTraining(e) {
   e.preventDefault();
 
   const titleSelect = document.getElementById('trainingTitle');
@@ -371,7 +399,7 @@ function handleAddTraining(e) {
     return;
   }
 
-  const trainings = getTrainings();
+  const trainings = await getTrainings();
   const newTrainings = [];
 
   if (type === 'single') {
@@ -406,7 +434,7 @@ function handleAddTraining(e) {
     return;
   }
 
-  saveTrainings([...trainings, ...newTrainings]);
+  await saveTrainings(newTrainings);
 
   const msg = type === 'single'
     ? 'Trening dodany ✅'
