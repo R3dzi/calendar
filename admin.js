@@ -33,7 +33,9 @@ window.location.href="login.html";
 }
 
 
-checkAdmin();
+document.addEventListener('DOMContentLoaded', async () => {
+
+  await checkAdmin();
 
 const STORAGE_KEY = 'fitreserve_trainings';
 const BOOKINGS_KEY = 'fitreserve_bookings';
@@ -546,9 +548,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveTrainings(defaultTrainings);
   }
 
-  await renderTable();
-  await renderBookings();
-  await updateStats();
+    document.addEventListener('DOMContentLoaded', async () => {
+    
+      await checkAdmin();
+    
+      await renderTable();
+      await renderBookings();
+      await updateStats();
+    
+    });
 
   document.getElementById('addTrainingForm').addEventListener('submit', handleAddTraining);
   document.getElementById('cancelDelete').addEventListener('click', closeConfirm);
