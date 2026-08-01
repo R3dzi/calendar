@@ -20,7 +20,12 @@ async function getTrainings() {
 
   const { data, error } = await supabase
     .from("trainings")
-    .select("*")
+    .select(`
+      *,
+      bookings (
+        id
+      )
+    `)
     .order("date")
     .order("time");
 
@@ -29,7 +34,11 @@ async function getTrainings() {
     return [];
   }
 
-  return data;
+
+  return data.map(training => ({
+    ...training,
+    booked: training.bookings ? training.bookings.length : 0
+  }));
 }
 
 async function saveTrainings(trainings) {
