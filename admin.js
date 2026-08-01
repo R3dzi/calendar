@@ -218,7 +218,7 @@ async function renderBookings() {
 // --- USUWANIE TRENINGU ---
 let deleteTrainingId = null;
 
-function confirmDeleteTraining(trainingId) {
+async function confirmDeleteTraining(trainingId) {
   deleteTrainingId = trainingId;
   const trainings = await getTrainings();
   const training = trainings.find(t => t.id === trainingId);
@@ -243,7 +243,7 @@ function confirmDeleteTraining(trainingId) {
 // --- USUWANIE ZAPISU ---
 let deleteBookingId = null;
 
-function confirmDeleteBooking(bookingId) {
+async function confirmDeleteBooking(bookingId) {
   deleteBookingId = bookingId;
   const bookings = getBookings();
   const bookingsList = getBookings();
@@ -269,7 +269,7 @@ function closeConfirm() {
   deleteBookingId = null;
 }
 
-function executeDelete() {
+async function executeDelete() {
   // Sprawdź czy usuwamy trening czy booking
   if (deleteTrainingId !== null) {
     const trainings = await getTrainings();
