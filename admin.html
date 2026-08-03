@@ -48,9 +48,16 @@
 
       <div class="admin-layout">
         <!-- Form Panel -->
-        <aside class="admin-panel">
-          <h3>➕ Dodaj trening</h3>
-          <form id="addTrainingForm">
+        <aside class="admin-panel collapsed">
+        
+          <div class="admin-panel-header" id="addTrainingToggle">
+            <h3>➕ Dodaj trening</h3>
+            <span class="toggle-icon">▼</span>
+          </div>
+        
+          <div class="admin-panel-content" id="addTrainingContent">
+        
+            <form id="addTrainingForm">
             <div class="form-group">
               <label class="form-label" for="trainingTitle">Nazwa treningu</label>
               <select class="form-select" id="trainingTitle" required>
@@ -113,53 +120,37 @@
               Dodaj do grafiku
             </button>
           </form>
+      
+        </div>
         </aside>
 
         <!-- Tables -->
         <div>
           <!-- Trainings Table -->
-          <div class="admin-table-container">
-            <div class="admin-table-header">
+          <div class="admin-table-container collapsed">
+          
+            <div class="admin-table-header accordion-header" id="trainingsToggle">
+          
               <h3>📋 Nadchodzące treningi</h3>
+          
+              <span class="toggle-icon">▼</span>
+          
             </div>
-            <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-              <table class="admin-table">
+          
+          
+            <div class="accordion-content" id="trainingsContent">
+          
+              <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+          
+                <table class="admin-table">
                 <thead>
                   <tr>
                     <th>Data</th>
                     <th>Godz.</th>
                     <th>Nazwa</th>
-                    <th>Miejsc</th>
-                    <th>Zap.</th>
-                    <th>Wolne</th>
-                    <th>Status</th>
-                    <th style="width: 80px;">Akcje</th>
                   </tr>
                 </thead>
                 <tbody id="adminTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Bookings Table -->
-          <div class="admin-table-container" style="margin-top: 24px;">
-            <div class="admin-table-header">
-              <h3>👤 Zapisane osoby</h3>
-              <span style="color: var(--text-muted); font-size: 0.85rem;">Kliknij „Usuń zapis”, aby anulować rezerwację</span>
-            </div>
-            <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Imię i nazwisko</th>
-                    <th>Email</th>
-                    <th>Telefon</th>
-                    <th>Trening</th>
-                    <th>Uwagi</th>
-                    <th style="width: 120px;">Akcje</th>
-                  </tr>
-                </thead>
-                <tbody id="bookingsTableBody"></tbody>
               </table>
             </div>
           </div>
@@ -168,6 +159,50 @@
     </div>
   </main>
 
+  <!-- Training Details Modal -->
+<div class="confirm-overlay training-modal-overlay" id="trainingModal">
+
+  <div class="confirm-box training-modal-box">
+
+
+
+    
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+
+      <h3 id="modalTitle">Trening</h3>
+
+      <button
+        id="closeTrainingModal"
+        class="btn btn-secondary btn-sm">
+        ✕
+      </button>
+
+    </div>
+
+    <div id="modalInfo"></div>
+
+    <hr style="margin:20px 0;">
+
+    <h4 style="margin-bottom:14px;">
+      Zapisane osoby
+    </h4>
+    
+    <div id="modalBookings"></div>
+    
+    <div style="margin-top:20px;text-align:right;">
+
+      <button
+        id="deleteTrainingBtn"
+        class="btn btn-danger">
+        Usuń trening
+      </button>
+
+    </div>
+
+  </div>
+</div>
+  
   <!-- Confirm Modal -->
   <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-box">

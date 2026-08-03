@@ -217,8 +217,9 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="email">Email *</label>
-            <input type="email" class="form-input" id="email" required placeholder="jan@example.com" autocomplete="email">
+            <label class="form-label" for="email">Email</label>
+            <input type="email" class="form-input" id="email" placeholder="jankowalski@gmail.com" autocomplete="email">
+            <p class="form-hint">Opcjonalnie</p>
           </div>
 
           <div class="form-group">
@@ -235,6 +236,38 @@
           <button type="submit" class="btn btn-primary" style="width: 100%;">
             Potwierdź rezerwację
           </button>
+
+          <div class="rodo-consent">
+            <label>
+              <input 
+                type="checkbox" 
+                id="rodoConsent"
+                required
+              >
+          
+              <span>
+                Zapoznałem/am się z klauzulą informacyjną RODO:
+              </span>
+            </label>
+          
+            <div class="rodo-text">
+              Administratorem danych osobowych jest Marek Darłak.
+              Dane osobowe będą przetwarzane wyłącznie w celu organizacji zapisów
+              oraz realizacji wydarzenia/treningu.
+          
+              Podstawą prawną przetwarzania danych jest zgoda osoby zapisującej się
+              (art. 6 ust. 1 lit. a RODO) lub prawnie uzasadniony interes administratora
+              związany z organizacją wydarzenia (art. 6 ust. 1 lit. f RODO).
+          
+              Dane będą przechowywane wyłącznie przez okres niezbędny do realizacji
+              wydarzenia, a następnie usuwane.
+          
+              Osobie przysługuje prawo dostępu do danych, ich sprostowania, usunięcia,
+              ograniczenia przetwarzania oraz wniesienia skargi do Prezesa Urzędu
+              Ochrony Danych Osobowych.
+            </div>
+          </div>
+          
         </form>
       </div>
     </div>

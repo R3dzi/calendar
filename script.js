@@ -55,7 +55,7 @@ function saveBookings(bookings) {
   localStorage.setItem(BOOKINGS_KEY, JSON.stringify(bookings));
 }
 
-let currentWeekStart = new Date(2026, 7, 10);
+let currentWeekStart = getCurrentWeekStart();
 let selectedTraining = null;
 
 function formatDatePL(date) {
@@ -92,6 +92,19 @@ function addDays(date, days) {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
   return result;
+}
+
+function getCurrentWeekStart() {
+  const today = new Date();
+
+  const day = today.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+
+  const monday = new Date(today);
+  monday.setDate(today.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+
+  return monday;
 }
 
 // ================= MOBILE MENU =================
@@ -156,7 +169,13 @@ async function renderCalendar() {
     const dayTrainings = trainings.filter(t => t.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
 
     const dayColumn = document.createElement('div');
-    dayColumn.className = 'day-column';
+    
+    const today = new Date();
+    const isToday = dateToStr(dayDate) === dateToStr(today);
+    
+    dayColumn.className = isToday 
+      ? 'day-column today' 
+      : 'day-column';
 
     const fullDayName = getFullDayName(dayDate);
 
@@ -200,20 +219,6 @@ async function renderCalendar() {
 
     grid.appendChild(dayColumn);
   }
-}
-
-function getCurrentWeekStart() {
-  const today = new Date();
-
-  // poniedziałek jako początek tygodnia
-  const day = today.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + diff);
-  monday.setHours(0, 0, 0, 0);
-
-  return monday;
 }
 
 function updateWeekButtons() {
@@ -278,6 +283,8 @@ function closeBookingModal() {
   document.getElementById('bookingModal').classList.remove('active');
   document.body.style.overflow = '';
   selectedTraining = null;
+
+  document.getElementById('rodoConsent').checked = false;
 }
 
 document.getElementById('closeModal').addEventListener('click', closeBookingModal);
@@ -303,7 +310,19 @@ if (modalEl) {
 // ================= BOOKING FORM =================
 document.getElementById('bookingForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
   if (!selectedTraining) return;
+
+
+  const rodoChecked = document.getElementById('rodoConsent').checked;
+
+  if (!rodoChecked) {
+    showNotification(
+      'Musisz zaakceptować klauzulę RODO przed rezerwacją.',
+      'error'
+    );
+    return;
+  }
 
   const name = document.getElementById('fullName').value.trim();
   const email = document.getElementById('email').value.trim();

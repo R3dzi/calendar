@@ -14,6 +14,7 @@ const supabase = createClient(
     SUPABASE_KEY
 );
 
+let currentTrainingModalId = null;
 
 async function checkAdmin() {
 
@@ -219,15 +220,117 @@ async function renderTable() {
         <td>${formatDatePL(t.date)}</td>
         <td>${t.time}</td>
         <td style="font-weight: 600; color: var(--text-primary);">${t.title}${cyclicBadge}</td>
-        <td>${t.capacity}</td>
-        <td>${t.booked}</td>
-        <td style="color: ${available === 0 ? 'var(--danger)' : 'var(--accent)'}; font-weight: 600;">${available}</td>
-        <td>${statusBadge}</td>
-        <td class="actions">
-          <button class="btn btn-danger btn-sm" onclick="confirmDeleteTraining(${t.id})">🗑</button>
-        </td>
       </tr>`;
   }).join('');
+}
+
+// --- SZCZEGÓŁY TRENINGU ---
+async function openTrainingDetails(trainingId) {
+    currentTrainingModalId = trainingId;
+    const { data: training, error } = await supabase
+        .from("trainings")
+        .select(`
+            *,
+            bookings (
+                id,
+                name,
+                email,
+                notes
+            )
+        `)
+        .eq("id", trainingId)
+        .maybeSingle();
+
+    if(error){
+    
+      console.error(error);
+      return;
+    
+    }
+    
+    
+    if(!training){
+    
+      document
+        .getElementById('trainingModal')
+        .classList.remove('active');
+    
+      currentTrainingModalId = null;
+    
+      return;
+    
+    }
+
+    // nagłówek
+    document.getElementById("modalTitle").textContent = training.title;
+
+    // informacje
+    document.getElementById("modalInfo").innerHTML = `
+        <p><strong>Data:</strong> ${formatDatePL(training.date)}</p>
+        <p><strong>Godzina:</strong> ${training.time}</p>
+        <p><strong>Pojemność:</strong> ${training.capacity}</p>
+        <p><strong>Zapisanych:</strong> ${training.bookings.length}</p>
+        <p><strong>Wolnych miejsc:</strong> ${training.capacity - training.bookings.length}</p>
+    `;
+
+    // lista zapisanych
+    const bookingsContainer = document.getElementById("modalBookings");
+
+    if (training.bookings.length === 0) {
+
+        bookingsContainer.innerHTML =
+            "<p>Nikt nie jest zapisany.</p>";
+
+    } else {
+
+        bookingsContainer.innerHTML = training.bookings.map(person => `
+        
+        <div class="booking-card">
+        
+            <div class="booking-card-header">
+        
+                <div>
+        
+                    <div class="booking-name">
+                        ${person.name}
+                    </div>
+        
+                    <div class="booking-email">
+                        ${person.email}
+                    </div>
+        
+                </div>
+        
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="confirmDeleteBooking(${person.id})">
+                    Usuń
+                </button>
+        
+            </div>
+        
+            <div class="booking-notes">
+        
+                <strong>Uwagi:</strong><br>
+        
+                ${person.notes?.trim() || "Brak"}
+        
+            </div>
+        
+        </div>
+        
+        `).join("");
+
+    }
+
+    // zapamiętaj ID treningu do usunięcia
+    document.getElementById("deleteTrainingBtn").onclick = () => {
+        confirmDeleteTraining(training.id);
+    };
+
+    // pokaż modal
+    document.getElementById("trainingModal").classList.add("active");
+
 }
 
 // --- LISTA ZAPISANYCH OSÓB ---
@@ -333,6 +436,9 @@ async function deleteBooking(id){
    console.error(error);
    throw error;
  }
+
+ await refreshAdminView();
+
 }
 
 async function executeDelete() {
@@ -355,6 +461,7 @@ async function executeDelete() {
     }
 
     await deleteTraining(deleteTrainingId);
+    currentTrainingModalId = null;
   }
 
     if (deleteBookingId !== null) {
@@ -365,9 +472,9 @@ async function executeDelete() {
     }
     
       closeConfirm();
-      renderTable();
-      renderBookings();
-      updateStats();
+        await refreshAdminView();
+        document.getElementById('trainingModal').classList.remove('active');
+        currentTrainingModalId = null;
     }
 
 // --- CYCLIC PREVIEW ---
@@ -433,15 +540,35 @@ function toggleCyclicFields() {
 // --- DELETE TRAINING ---
 async function deleteTraining(id){
 
- const { error } = await supabase
-   .from("trainings")
-   .delete()
-   .eq("id", id);
+  // 1. Usuń wszystkie zapisy na ten trening
+  const { error: bookingError } = await supabase
+    .from("bookings")
+    .delete()
+    .eq("training_id", id);
 
- if(error){
-   console.error(error);
-   throw error;
- }
+
+  if(bookingError){
+
+    console.error(bookingError);
+    throw bookingError;
+
+  }
+
+
+  // 2. Usuń trening
+  const { error: trainingError } = await supabase
+    .from("trainings")
+    .delete()
+    .eq("id", id);
+
+
+  if(trainingError){
+
+    console.error(trainingError);
+    throw trainingError;
+
+  }
+
 }
 
 // --- ADD TRAINING ---
@@ -543,6 +670,16 @@ async function handleAddTraining(e) {
 window.confirmDeleteBooking = confirmDeleteBooking;
 window.confirmDeleteTraining = confirmDeleteTraining;
 
+async function refreshAdminView(){
+
+  await renderTable();
+  await updateStats();
+
+  if(currentTrainingModalId){
+    await openTrainingDetails(currentTrainingModalId);
+  }
+}
+
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -555,7 +692,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Załaduj dane z Supabase
   await renderTable();
-  await renderBookings();
   await updateStats();
 
   // Event listenery
@@ -563,6 +699,44 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('cancelDelete').addEventListener('click', closeConfirm);
   document.getElementById('confirmDelete').addEventListener('click', executeDelete);
 
+    document
+      .getElementById('trainingModal')
+      .addEventListener('click', (e) => {
+    
+        if(e.target.id === 'trainingModal'){
+    
+          document
+            .getElementById('trainingModal')
+            .classList.remove('active');
+    
+          currentTrainingModalId = null;
+    
+        }
+    
+      });
+    
+    document
+      .getElementById('closeTrainingModal')
+      .addEventListener('click', () => {
+    
+        document
+          .getElementById('trainingModal')
+          .classList.remove('active');
+    
+        currentTrainingModalId = null;
+    
+      });
+    
+    const tbody = document.getElementById("adminTableBody");
+
+    tbody.addEventListener("click", (e) => {
+        const row = e.target.closest("tr");
+    
+        if (!row) return;
+    
+        openTrainingDetails(Number(row.dataset.id));
+    });
+    
   document.getElementById('confirmOverlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('confirmOverlay')) {
       closeConfirm();
@@ -595,4 +769,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   updateDayHint();
 
+    const addTrainingToggle = document.getElementById('addTrainingToggle');
+    const addTrainingPanel = document.querySelector('.admin-panel');
+    addTrainingToggle.addEventListener('click', () => {
+      addTrainingPanel.classList.toggle('collapsed');
+    });
+
+    const trainingsToggle = document.getElementById('trainingsToggle');
+    const trainingsPanel = trainingsToggle.closest('.admin-table-container');
+    trainingsToggle.addEventListener('click', () => {
+      trainingsPanel.classList.toggle('collapsed');
+    });
 });
